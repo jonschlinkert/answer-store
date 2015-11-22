@@ -18,10 +18,11 @@ function Answer(name, options) {
     throw new TypeError('expected the first argument to be a string');
   }
   Emitter.call(this);
-  this.entries = [];
   this.options = options || {};
   this.name = name;
   this.data = utils.readJson(this.path);
+  this.data.rollback = this.data.rollback || [];
+  this.data.entries = this.data.entries || [];
 }
 
 /**
@@ -47,10 +48,35 @@ Answer.prototype.paths = {};
  */
 
 Answer.prototype.set = function(val) {
-  set(this.data, this.name, val);
-  this.entry = val;
+  this.data.entries.push(val);
   this.emit('set', val);
   this.save();
+  return this;
+};
+
+/**
+ * Remove the last answer.
+ *
+ * ```js
+ * answer.undo();
+ * ```
+ *
+ * @api public
+ */
+
+Answer.prototype.undo = function() {
+  if (this.len) {
+    this.data.rollback.push(this.data.entries.pop());
+    this.save();
+  }
+  return this;
+};
+
+Answer.prototype.redo = function() {
+  if (this.data.rollback.length) {
+    this.data.entries.push(this.data.rollback.pop());
+    this.save();
+  }
   return this;
 };
 
@@ -65,7 +91,30 @@ Answer.prototype.set = function(val) {
  */
 
 Answer.prototype.get = function() {
-  return get(this.data, this.name);
+  return this.data.entries[this.len - 1];
+};
+
+Answer.prototype.backup = function() {
+  this.data.rollback = this.data.rollback.concat(this.data.entries);
+  return this;
+};
+
+/**
+ * Get a previous answer.
+ *
+ * ```js
+ * answer.prev(2);
+ * ```
+ *
+ * @api public
+ */
+
+Answer.prototype.prev = function(n) {
+  return this.data.entries[this.len - (n && n > 0 ? n + 1 : 1)];
+};
+
+Answer.prototype.list = function() {
+  return this.data.entries;
 };
 
 /**
@@ -79,7 +128,14 @@ Answer.prototype.get = function() {
  */
 
 Answer.prototype.del = function(cb) {
-  this.erase();
+  this.backup();
+  this.data.entries = [];
+  utils.del(this.path, {}, cb);
+};
+
+Answer.prototype.destroy = function(cb) {
+  this.data.rollback = [];
+  this.data.entries = [];
   utils.del(this.path, {}, cb);
 };
 
@@ -94,7 +150,8 @@ Answer.prototype.del = function(cb) {
  */
 
 Answer.prototype.erase = function() {
-  this.set(null);
+  this.data.entries.pop();
+  this.save();
   return this;
 };
 
@@ -109,9 +166,35 @@ Answer.prototype.erase = function() {
  */
 
 Answer.prototype.save = function() {
-  utils.writeJson(this.path, this.data);
-  return this;
+  utils.writeJson.sync(this.path, this.data);
 };
+
+/**
+ * Get the number of entries.
+ */
+
+Object.defineProperty(Answer.prototype, 'current', {
+  enumerable: true,
+  set: function() {
+    throw new Error('current is a getter and may not be overwritten.');
+  },
+  get: function() {
+    return this.data.entries[this.len - 1];
+  }
+});
+
+/**
+ * Get the number of entries.
+ */
+
+Object.defineProperty(Answer.prototype, 'len', {
+  set: function() {
+    throw new Error('len is a getter and may not be overwritten.');
+  },
+  get: function() {
+    return this.data.entries.length;
+  }
+});
 
 /**
  * Getter/setter for answer cwd
@@ -144,19 +227,6 @@ Object.defineProperty(Answer.prototype, 'path', {
     }
     var fp = path.resolve(this.cwd, this.name + '.json');
     return (this.paths.path = fp);
-  }
-});
-
-/**
- * Getter/setter for previous answer
- */
-
-Object.defineProperty(Answer.prototype, 'entry', {
-  set: function(val) {
-    this.entries.push(val);
-  },
-  get: function() {
-    return this.entries[this.entries.length - 1];
   }
 });
 
