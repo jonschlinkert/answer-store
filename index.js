@@ -8,28 +8,26 @@
 'use strict';
 
 var path = require('path');
-var Emitter = require('component-emitter');
 var set = require('set-value');
 var get = require('get-value');
 var utils = require('./utils');
 
-function Answer(name, options) {
-  if (typeof name !== 'string') {
-    throw new TypeError('expected the first argument to be a string');
-  }
-  Emitter.call(this);
-  this.options = options || {};
-  this.name = name;
-  this.data = utils.readJson(this.path);
-  this.data.rollback = this.data.rollback || [];
-  this.data.entries = this.data.entries || [];
-}
-
 /**
- * Inherit Emitter
+ * Create new `Answer` store `name`, with the given `options`.
+ *
+ * @param {String} `key` The answer key
+ * @param {Object} `options` Store options
+ * @api public
  */
 
-Emitter(Answer.prototype);
+function Answer(key, options) {
+  if (typeof key !== 'string') {
+    throw new TypeError('expected the first argument to be a string');
+  }
+  this.options = options || {};
+  this.name = key;
+  this.data = utils.readJson(this.path);
+}
 
 /**
  * Non-emumerable paths cache
@@ -48,35 +46,8 @@ Answer.prototype.paths = {};
  */
 
 Answer.prototype.set = function(val) {
-  this.data.entries.push(val);
-  this.emit('set', val);
+  set(this.data, [this.name, this.cwd], val);
   this.save();
-  return this;
-};
-
-/**
- * Remove the last answer.
- *
- * ```js
- * answer.undo();
- * ```
- *
- * @api public
- */
-
-Answer.prototype.undo = function() {
-  if (this.len) {
-    this.data.rollback.push(this.data.entries.pop());
-    this.save();
-  }
-  return this;
-};
-
-Answer.prototype.redo = function() {
-  if (this.data.rollback.length) {
-    this.data.entries.push(this.data.rollback.pop());
-    this.save();
-  }
   return this;
 };
 
@@ -91,68 +62,22 @@ Answer.prototype.redo = function() {
  */
 
 Answer.prototype.get = function() {
-  return this.data.entries[this.len - 1];
-};
-
-Answer.prototype.backup = function() {
-  this.data.rollback = this.data.rollback.concat(this.data.entries);
-  return this;
+  return get(this.data, [this.name, this.cwd]);
 };
 
 /**
- * Get a previous answer.
- *
- * ```js
- * answer.prev(2);
- * ```
- *
- * @api public
- */
-
-Answer.prototype.prev = function(n) {
-  return this.data.entries[this.len - (n && n > 0 ? n + 1 : 1)];
-};
-
-Answer.prototype.list = function() {
-  return this.data.entries;
-};
-
-/**
- * Delete the answer store from disk.
+ * Delete the entire answer store.
  *
  * ```js
  * answer.del();
  * ```
- *
+ * @param {Function} `callback`
  * @api public
  */
 
-Answer.prototype.del = function(cb) {
-  this.backup();
-  this.data.entries = [];
-  utils.del(this.path, {}, cb);
-};
-
-Answer.prototype.destroy = function(cb) {
-  this.data.rollback = [];
-  this.data.entries = [];
-  utils.del(this.path, {}, cb);
-};
-
-/**
- * Erase the answer from memory.
- *
- * ```js
- * answer.erase();
- * ```
- *
- * @api public
- */
-
-Answer.prototype.erase = function() {
-  this.data.entries.pop();
-  this.save();
-  return this;
+Answer.prototype.del = function() {
+  this.data[this.name] = null;
+  utils.del.sync(this.path);
 };
 
 /**
@@ -170,33 +95,6 @@ Answer.prototype.save = function() {
 };
 
 /**
- * Get the number of entries.
- */
-
-Object.defineProperty(Answer.prototype, 'current', {
-  enumerable: true,
-  set: function() {
-    throw new Error('current is a getter and may not be overwritten.');
-  },
-  get: function() {
-    return this.data.entries[this.len - 1];
-  }
-});
-
-/**
- * Get the number of entries.
- */
-
-Object.defineProperty(Answer.prototype, 'len', {
-  set: function() {
-    throw new Error('len is a getter and may not be overwritten.');
-  },
-  get: function() {
-    return this.data.entries.length;
-  }
-});
-
-/**
  * Getter/setter for answer cwd
  */
 
@@ -208,8 +106,25 @@ Object.defineProperty(Answer.prototype, 'cwd', {
     if (this.paths.hasOwnProperty('cwd')) {
       return this.paths.cwd;
     }
-    var cwd = utils.resolveDir(this.options.cwd || '~/answers');
+    var cwd = path.resolve(this.options.cwd || process.cwd());
     return (this.paths.cwd = cwd);
+  }
+});
+
+/**
+ * Getter/setter for answer dest
+ */
+
+Object.defineProperty(Answer.prototype, 'dest', {
+  set: function(dest) {
+    this.paths.dest = dest;
+  },
+  get: function() {
+    if (this.paths.hasOwnProperty('dest')) {
+      return this.paths.dest;
+    }
+    var dest = utils.resolveDir(this.options.dest || '~/answers');
+    return (this.paths.dest = dest);
   }
 });
 
@@ -225,7 +140,7 @@ Object.defineProperty(Answer.prototype, 'path', {
     if (this.paths.hasOwnProperty('path')) {
       return this.paths.path;
     }
-    var fp = path.resolve(this.cwd, this.name + '.json');
+    var fp = path.resolve(this.dest, this.name + '.json');
     return (this.paths.path = fp);
   }
 });

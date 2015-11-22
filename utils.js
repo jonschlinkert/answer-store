@@ -1,17 +1,17 @@
 'use strict';
 
+var fs = require('fs');
 var path = require('path');
-
-/**
- * Utils
- */
-
 var utils = require('lazy-cache')(require);
 var fn = require;
+
+/**
+ * Lazily required module dependencies
+ */
+
 require = utils;
 require('write-json');
 require('resolve-dir');
-require('graceful-fs', 'gfs');
 require('rimraf', 'del');
 require = fn;
 
@@ -24,7 +24,7 @@ require = fn;
 
 utils.readJson = function(fp) {
   try {
-    var str = utils.gfs.readFileSync(path.resolve(fp), 'utf8');
+    var str = fs.readFileSync(path.resolve(fp), 'utf8');
     return JSON.parse(str);
   } catch(err) {}
   return {};
