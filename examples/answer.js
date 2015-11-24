@@ -9,4 +9,4 @@ answer.set('Jon');
 answer.set('Jean', 'fr');
 answer.set('Hugo', 'es');
 
-console.log(answer.get());
+console.log(answer);
