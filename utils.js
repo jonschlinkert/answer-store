@@ -10,10 +10,30 @@ var fn = require;
  */
 
 require = utils;
-require('write-json');
-require('resolve-dir');
+require('extend-shallow', 'extend');
+require('unset-value', 'unset');
+require('set-value', 'set');
+require('get-value', 'get');
+require('has-value', 'has');
 require('rimraf', 'del');
+require('resolve-dir');
+require('write-json');
 require = fn;
+
+/**
+ * Create the key to use for getting and setting values.
+ * If the key contains a filepath, and the filepath has
+ * dots in it, we need to escape them to ensure that
+ * `set-value` doesn't split on those dots.
+ */
+
+utils.toKey = function(fp, key) {
+  if (typeof fp !== 'string') {
+    throw new TypeError('expected fp to be a string');
+  }
+  fp = fp.split('.').join('\\.');
+  return fp + (key ? ('.' + key) : '');
+};
 
 /**
  * Read a JSON file.
