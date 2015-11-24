@@ -152,7 +152,7 @@ Answer.prototype.del = function(locale) {
  * Erase all stored values and delete the answer store from the file system.
  *
  * ```js
- * answer.del();
+ * answer.erase();
  * ```
  * @api public
  */

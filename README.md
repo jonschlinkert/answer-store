@@ -263,7 +263,7 @@ Erase all stored values and delete the answer store from the file system.
 **Example**
 
 ```js
-answer.del();
+answer.erase();
 ```
 
 ## Related projects
