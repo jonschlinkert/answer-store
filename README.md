@@ -1,6 +1,6 @@
 # answer-store [![NPM version](https://badge.fury.io/js/answer-store.svg)](http://badge.fury.io/js/answer-store)  [![Build Status](https://travis-ci.org/jonschlinkert/answer-store.svg)](https://travis-ci.org/jonschlinkert/answer-store)
 
-> Ask a question, store the answer.
+> Store answers to user prompts, based on locale and/or current working directory.
 
 - [Install](#install)
 - [Usage](#usage)

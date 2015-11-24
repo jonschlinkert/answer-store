@@ -1,6 +1,6 @@
 {
   "name": "answer-store",
-  "description": "Ask a question, store the answer.",
+  "description": "Store answers to user prompts, based on locale and/or current working directory.",
   "version": "0.1.1",
   "homepage": "https://github.com/jonschlinkert/answer-store",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
