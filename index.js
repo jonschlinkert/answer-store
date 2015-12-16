@@ -25,7 +25,6 @@ function Answer(name, options) {
   this.cache = {};
   this.options = options || {};
   this.name = name;
-  this.data = utils.readJson(this.path);
 }
 
 /**
@@ -191,6 +190,23 @@ Answer.prototype.defaultKey = function(locale) {
 Answer.prototype.toKey = function(locale) {
   return utils.toKey(locale || this.locale, this.cwd);
 };
+
+/**
+ * Getter/setter for answer.data
+ */
+
+Object.defineProperty(Answer.prototype, 'data', {
+  set: function(data) {
+    this.cache.data = data;
+    this.save();
+  },
+  get: function() {
+    if (this.cache.data) {
+      return this.cache.data;
+    }
+    return (this.cache.data = utils.readJson(this.path));
+  }
+});
 
 /**
  * Getter/setter for answer cwd
