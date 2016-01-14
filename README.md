@@ -1,4 +1,4 @@
-# answer-store [![NPM version](https://img.shields.io/npm/v/answer-store.svg)](https://www.npmjs.com/package/answer-store) [![Build Status](https://img.shields.io/travis/jonschlinkert/answer-store.svg)](https://travis-ci.org/jonschlinkert/answer-store)
+# answer-store [![NPM version](https://img.shields.io/npm/v/answer-store.svg)](https://www.npmjs.com/package/answer-store) [![Build Status](https://img.shields.io/travis/jonschlinkert/answer-store.svg)](https://travis-ci.org/jonschlinkert/answer-store) {%= badge("travis") %}
 
 > Store answers to user prompts, based on locale and/or current working directory.
 

@@ -46,7 +46,7 @@ utils.readJson = function(fp) {
   try {
     var str = fs.readFileSync(path.resolve(fp), 'utf8');
     return JSON.parse(str);
-  } catch(err) {}
+  } catch (err) {}
   return {};
 };
 
