@@ -1,7 +1,7 @@
 {
   "name": "answer-store",
   "description": "Store answers to user prompts, based on locale and/or current working directory.",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "homepage": "https://github.com/jonschlinkert/answer-store",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
   "repository": "jonschlinkert/answer-store",
@@ -24,15 +24,16 @@
     "extend-shallow": "^2.0.1",
     "get-value": "^2.0.2",
     "has-value": "^0.3.0",
-    "lazy-cache": "^1.0.2",
+    "lazy-cache": "^1.0.3",
     "resolve-dir": "^0.1.0",
-    "rimraf": "^2.4.4",
+    "rimraf": "^2.5.0",
     "set-value": "^0.3.2",
     "unset-value": "^0.1.1",
     "write-json": "^0.2.2"
   },
   "devDependencies": {
     "assert-fs": "^0.1.0",
+    "gulp-format-md": "^0.1.5",
     "mocha": "*"
   },
   "keywords": [
@@ -40,19 +41,17 @@
     "store"
   ],
   "verb": {
-    "toc": {
-      "render": true,
-      "insert": false
-    },
-    "related": {
-      "list": [
-        "ask-once",
-        "question-cache"
-      ]
-    },
     "layout": "default",
     "plugins": [
       "gulp-format-md"
-    ]
+    ],
+    "related": {
+      "list": [
+        "ask-once",
+        "common-questions",
+        "question-cache",
+        "question-store"
+      ]
+    }
   }
 }
