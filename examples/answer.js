@@ -1,9 +1,10 @@
 'use strict';
 
 var Answer = require('..');
-var answer = new Answer('first-name', {locale: 'fr'});
+var answer = new Answer('first-name', {locale: 'en'});
 
 answer.setDefault('Jon');
+answer.delDefault('es');
 
 answer.set('Jon');
 answer.set('Jean', 'fr');

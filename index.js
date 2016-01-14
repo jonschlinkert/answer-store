@@ -25,6 +25,17 @@ function Answer(name, options) {
   this.cache = {};
   this.options = options || {};
   this.name = name;
+
+  /**
+   * Custom inspect method
+   */
+
+  if (this.options.debug !== true) {
+    this.inspect = function() {
+      var answer = '"' + this.get(this.locale) + '"';
+      return '<Answer ' + this.locale + ': ' + answer + '>';
+    };
+  }
 }
 
 /**
@@ -121,13 +132,13 @@ Answer.prototype.hasDefault = function(locale) {
  * Delete the stored values for the current (or given) locale.
  *
  * ```js
- * answer.deleteDefault(locale);
+ * answer.delDefault(locale);
  * ```
  * @param {String} `locale` Optionally pass the local to delete.
  * @api public
  */
 
-Answer.prototype.deleteDefault = function(locale) {
+Answer.prototype.delDefault = function(locale) {
   utils.unset(this.data, this.defaultKey(locale));
   this.save();
 };
