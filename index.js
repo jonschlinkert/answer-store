@@ -22,6 +22,7 @@ function Answer(name, options) {
   if (typeof name !== 'string') {
     throw new TypeError('expected the first argument to be a string');
   }
+
   this.cache = {};
   this.options = options || {};
   this.name = name;
@@ -85,6 +86,49 @@ Answer.prototype.has = function(locale) {
 };
 
 /**
+ * Delete the stored values for the current (or given) locale, at the current cwd.
+ *
+ * ```js
+ * answer.del(locale);
+ * ```
+ * @param {String} `locale` Optionally pass the local to delete.
+ * @api public
+ */
+
+Answer.prototype.del = function(locale) {
+  utils.unset(this.data, this.toKey(locale));
+  this.save();
+  return this;
+};
+
+/**
+ * Erase all stored values and delete the answer store from the file system.
+ *
+ * ```js
+ * answer.erase();
+ * ```
+ * @api public
+ */
+
+Answer.prototype.erase = function() {
+  this.data = {};
+  utils.del.sync(this.path);
+  return this;
+};
+
+/**
+ * Persist the answer to disk.
+ *
+ * ```js
+ * answer.save();
+ * ```
+ */
+
+Answer.prototype.save = function() {
+  utils.writeJson.sync(this.path, this.data);
+};
+
+/**
  * Set the default answer for the currently defined `locale`.
  *
  * ```js
@@ -144,47 +188,6 @@ Answer.prototype.delDefault = function(locale) {
 };
 
 /**
- * Delete the stored values for the current (or given) locale, at the current cwd.
- *
- * ```js
- * answer.del(locale);
- * ```
- * @param {String} `locale` Optionally pass the local to delete.
- * @api public
- */
-
-Answer.prototype.del = function(locale) {
-  utils.unset(this.data, this.toKey(locale));
-  this.save();
-};
-
-/**
- * Erase all stored values and delete the answer store from the file system.
- *
- * ```js
- * answer.erase();
- * ```
- * @api public
- */
-
-Answer.prototype.erase = function() {
-  this.data = {};
-  utils.del.sync(this.path);
-};
-
-/**
- * Persist the answer to disk.
- *
- * ```js
- * answer.save();
- * ```
- */
-
-Answer.prototype.save = function() {
-  utils.writeJson.sync(this.path, this.data);
-};
-
-/**
  * Create the property key to use for getting and setting
  * the `default` value for the current locale.
  */
@@ -228,10 +231,7 @@ Object.defineProperty(Answer.prototype, 'cwd', {
     this.cache.cwd = cwd;
   },
   get: function() {
-    if (this.cache.cwd) {
-      return this.cache.cwd;
-    }
-    var cwd = this.options.cwd || process.cwd();
+    var cwd = this.cache.cwd || this.options.cwd || process.cwd();
     return (this.cache.cwd = cwd);
   }
 });
