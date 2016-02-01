@@ -10,12 +10,13 @@ var fn = require;
  */
 
 require = utils;
-require('extend-shallow', 'extend');
-require('unset-value', 'unset');
-require('set-value', 'set');
 require('get-value', 'get');
 require('has-value', 'has');
+require('set-value', 'set');
+require('unset-value', 'unset');
 require('rimraf', 'del');
+
+require('project-name', 'project');
 require('resolve-dir');
 require('write-json');
 require = fn;
@@ -27,24 +28,24 @@ require = fn;
  * `set-value` doesn't split on those dots.
  */
 
-utils.toKey = function(fp, key) {
-  if (typeof fp !== 'string') {
-    throw new TypeError('expected fp to be a string');
+utils.toKey = function(filepath, key) {
+  if (typeof filepath !== 'string') {
+    throw new TypeError('expected filepath to be a string');
   }
-  fp = fp.split('.').join('\\.');
-  return fp + (key ? ('.' + key) : '');
+  filepath = filepath.split('.').join('\\.');
+  return filepath + (key ? ('.' + key) : '');
 };
 
 /**
  * Read a JSON file.
  *
- * @param {String} `fp`
+ * @param {String} `filepath`
  * @return {Object}
  */
 
-utils.readJson = function(fp) {
+utils.readJson = function(filepath) {
   try {
-    var str = fs.readFileSync(path.resolve(fp), 'utf8');
+    var str = fs.readFileSync(path.resolve(filepath), 'utf8');
     return JSON.parse(str);
   } catch (err) {}
   return {};

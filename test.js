@@ -16,7 +16,7 @@ function json(filename) {
 
 describe('answer-store', function() {
   beforeEach(function() {
-    answer = new Answer('name');
+    answer = new Answer('answer-store-test');
   });
 
   afterEach(function() {
@@ -60,18 +60,22 @@ describe('answer-store', function() {
     });
 
     it('should use cwd defined on the constructor options', function() {
-      answer = new Answer('name', {cwd: 'foo'})
+      answer = new Answer('answer-store-test', {cwd: 'foo'})
       assert.equal(answer.cwd, 'foo');
     });
 
     it('should update the cwd when directly defined', function() {
-      answer = new Answer('name', {cwd: 'foo'});
+      answer = new Answer('answer-store-test', {cwd: 'foo'});
       answer.cwd = 'bar';
       assert.equal(answer.cwd, 'bar');
     });
   });
 
   describe('set', function() {
+    beforeEach(function() {
+      answer = new Answer('answer-store-test', {debug: true});
+    });
+
     it('should create the `~/answers` directory when an answer is set', function() {
       answer.set('foo');
       assert.existsSync(utils.resolveDir('~/answers'));
@@ -79,27 +83,31 @@ describe('answer-store', function() {
 
     it('should create an answer store in the default directory', function() {
       answer.set('foo');
-      assert.existsSync(utils.resolveDir('~/answers/name.json'));
+      assert.existsSync(utils.resolveDir('~/answers/answer-store-test.json'));
     });
 
     it('should set a value on [locale][cwd]', function() {
       answer.set('foo');
-      assert(answer.data.en[process.cwd()]);
+      assert(answer.data.projects.en[answer.project]);
     });
 
     it('should set a value on the default locale, "en"', function() {
       answer.set('foo');
-      assert(answer.data.en[process.cwd()]);
+      assert(answer.data.projects.en[answer.project]);
     });
 
     it('should set a value on the specified locale', function() {
       answer.set('bar', 'es');
-      assert(answer.data.es[process.cwd()]);
-      assert.equal(answer.data.es[process.cwd()], 'bar');
+      assert(answer.data.projects.es[answer.project]);
+      assert.equal(answer.data.projects.es[answer.project], 'bar');
     });
   });
 
   describe('has', function() {
+    beforeEach(function() {
+      answer = new Answer('answer-store-test', {debug: true});
+    });
+
     it('should return true if a value has been set for the cwd', function() {
       answer.set('foo');
       assert(answer.has());

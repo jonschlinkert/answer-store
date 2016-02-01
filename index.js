@@ -26,18 +26,20 @@ function Answer(name, options) {
   this.cache = {};
   this.options = options || {};
   this.name = name;
-
-  /**
-   * Custom inspect method
-   */
-
-  if (this.options.debug !== true) {
-    this.inspect = function() {
-      var answer = '"' + this.get(this.locale) + '"';
-      return '<Answer ' + this.locale + ': ' + answer + '>';
-    };
-  }
+  this.init();
 }
+
+/**
+ * Initialize
+ */
+
+Answer.prototype.init = function() {
+  if (this.options.debug === true) return;
+  this.inspect = function() {
+    var answer = this.get(this.locale) || this.getDefault(this.locale);
+    return '<Answer ' + this.locale + ': "' + answer + '"">';
+  };
+};
 
 /**
  * Store the specified `value` for the current (or given) local, at the current cwd.
@@ -51,7 +53,7 @@ function Answer(name, options) {
  */
 
 Answer.prototype.set = function(val, locale) {
-  utils.set(this.data, this.toKey(locale), val);
+  utils.set(this.data.projects, this.toKey(locale), val);
   this.save();
   return this;
 };
@@ -67,7 +69,7 @@ Answer.prototype.set = function(val, locale) {
  */
 
 Answer.prototype.get = function(locale) {
-  return utils.get(this.data, this.toKey(locale));
+  return utils.get(this.data.projects, this.toKey(locale));
 };
 
 /**
@@ -82,7 +84,7 @@ Answer.prototype.get = function(locale) {
  */
 
 Answer.prototype.has = function(locale) {
-  return utils.has(this.data, this.toKey(locale));
+  return utils.has(this.data.projects, this.toKey(locale));
 };
 
 /**
@@ -96,7 +98,7 @@ Answer.prototype.has = function(locale) {
  */
 
 Answer.prototype.del = function(locale) {
-  utils.unset(this.data, this.toKey(locale));
+  utils.unset(this.data.projects, this.toKey(locale));
   this.save();
   return this;
 };
@@ -117,18 +119,6 @@ Answer.prototype.erase = function() {
 };
 
 /**
- * Persist the answer to disk.
- *
- * ```js
- * answer.save();
- * ```
- */
-
-Answer.prototype.save = function() {
-  utils.writeJson.sync(this.path, this.data);
-};
-
-/**
  * Set the default answer for the currently defined `locale`.
  *
  * ```js
@@ -139,7 +129,7 @@ Answer.prototype.save = function() {
  */
 
 Answer.prototype.setDefault = function(val, locale) {
-  utils.set(this.data, this.defaultKey(locale), val);
+  utils.set(this.data.defaults, this.defaultKey(locale), val);
   this.save();
   return this;
 };
@@ -155,7 +145,7 @@ Answer.prototype.setDefault = function(val, locale) {
  */
 
 Answer.prototype.getDefault = function(locale) {
-  return utils.get(this.data, this.defaultKey(locale));
+  return utils.get(this.data.defaults, this.defaultKey(locale));
 };
 
 /**
@@ -169,7 +159,7 @@ Answer.prototype.getDefault = function(locale) {
  */
 
 Answer.prototype.hasDefault = function(locale) {
-  return utils.has(this.data, this.defaultKey(locale));
+  return utils.has(this.data.defaults, this.defaultKey(locale));
 };
 
 /**
@@ -183,7 +173,7 @@ Answer.prototype.hasDefault = function(locale) {
  */
 
 Answer.prototype.delDefault = function(locale) {
-  utils.unset(this.data, this.defaultKey(locale));
+  utils.unset(this.data.defaults, this.defaultKey(locale));
   this.save();
 };
 
@@ -193,7 +183,7 @@ Answer.prototype.delDefault = function(locale) {
  */
 
 Answer.prototype.defaultKey = function(locale) {
-  return (locale || this.locale) + '.default';
+  return locale || this.locale;
 };
 
 /**
@@ -202,7 +192,15 @@ Answer.prototype.defaultKey = function(locale) {
  */
 
 Answer.prototype.toKey = function(locale) {
-  return utils.toKey(locale || this.locale, this.cwd);
+  return utils.toKey(locale || this.locale, this.project);
+};
+
+/**
+ * Persist the answer to disk.
+ */
+
+Answer.prototype.save = function() {
+  utils.writeJson.sync(this.path, this.data);
 };
 
 /**
@@ -210,15 +208,32 @@ Answer.prototype.toKey = function(locale) {
  */
 
 Object.defineProperty(Answer.prototype, 'data', {
+  configurable: true,
+  enumerable: true,
   set: function(data) {
     this.cache.data = data;
     this.save();
   },
   get: function() {
-    if (this.cache.data) {
-      return this.cache.data;
-    }
-    return (this.cache.data = utils.readJson(this.path));
+    var data = this.cache.data || (this.cache.data = utils.readJson(this.path));
+    data.defaults = data.defaults || {};
+    data.projects = data.projects || {};
+    return data;
+  }
+});
+
+/**
+ * Getter/setter for answer cwd
+ */
+
+Object.defineProperty(Answer.prototype, 'project', {
+  configurable: true,
+  enumerable: true,
+  set: function(project) {
+    this.cache.project = project;
+  },
+  get: function() {
+    return (this.cache.project = (this.cache.project || utils.project(this.cwd)));
   }
 });
 
@@ -227,12 +242,13 @@ Object.defineProperty(Answer.prototype, 'data', {
  */
 
 Object.defineProperty(Answer.prototype, 'cwd', {
+  configurable: true,
+  enumerable: true,
   set: function(cwd) {
     this.cache.cwd = cwd;
   },
   get: function() {
-    var cwd = this.cache.cwd || this.options.cwd || process.cwd();
-    return (this.cache.cwd = cwd);
+    return (this.cache.cwd = (this.cache.cwd || this.options.cwd || process.cwd()));
   }
 });
 
@@ -241,6 +257,8 @@ Object.defineProperty(Answer.prototype, 'cwd', {
  */
 
 Object.defineProperty(Answer.prototype, 'dest', {
+  configurable: true,
+  enumerable: true,
   set: function(dest) {
     this.cache.dest = dest;
   },
@@ -258,6 +276,8 @@ Object.defineProperty(Answer.prototype, 'dest', {
  */
 
 Object.defineProperty(Answer.prototype, 'path', {
+  configurable: true,
+  enumerable: true,
   set: function(fp) {
     this.cache.path = fp;
   },
@@ -275,6 +295,8 @@ Object.defineProperty(Answer.prototype, 'path', {
  */
 
 Object.defineProperty(Answer.prototype, 'locale', {
+  configurable: true,
+  enumerable: true,
   set: function(locale) {
     this.cache.locale = locale;
   },
