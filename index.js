@@ -84,7 +84,7 @@ Answer.prototype.get = function(locale) {
  */
 
 Answer.prototype.has = function(locale) {
-  return utils.has(this.data.projects, this.toKey(locale));
+  return typeof this.get(locale) !== 'undefined';
 };
 
 /**
@@ -159,7 +159,7 @@ Answer.prototype.getDefault = function(locale) {
  */
 
 Answer.prototype.hasDefault = function(locale) {
-  return utils.has(this.data.defaults, this.defaultKey(locale));
+  return typeof this.getDefault(locale) !== 'undefined';
 };
 
 /**
