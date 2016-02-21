@@ -88,18 +88,18 @@ describe('answer-store', function() {
 
     it('should set a value on [locale][cwd]', function() {
       answer.set('foo');
-      assert(answer.data.projects.en[answer.project]);
+      assert(answer.data.locales.en[answer.name]);
     });
 
     it('should set a value on the default locale, "en"', function() {
       answer.set('foo');
-      assert(answer.data.projects.en[answer.project]);
+      assert(answer.data.locales.en[answer.name]);
     });
 
     it('should set a value on the specified locale', function() {
       answer.set('bar', 'es');
-      assert(answer.data.projects.es[answer.project]);
-      assert.equal(answer.data.projects.es[answer.project], 'bar');
+      assert(answer.data.locales.es[answer.name]);
+      assert.equal(answer.data.locales.es[answer.name], 'bar');
     });
   });
 

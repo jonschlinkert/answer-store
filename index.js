@@ -53,7 +53,7 @@ Answer.prototype.init = function() {
  */
 
 Answer.prototype.set = function(val, locale) {
-  utils.set(this.data.projects, this.toKey(locale), val);
+  utils.set(this.data.locales, this.toKey(locale), val);
   this.save();
   return this;
 };
@@ -69,7 +69,7 @@ Answer.prototype.set = function(val, locale) {
  */
 
 Answer.prototype.get = function(locale) {
-  return utils.get(this.data.projects, this.toKey(locale));
+  return utils.get(this.data.locales, this.toKey(locale));
 };
 
 /**
@@ -98,7 +98,7 @@ Answer.prototype.has = function(locale) {
  */
 
 Answer.prototype.del = function(locale) {
-  utils.unset(this.data.projects, this.toKey(locale));
+  utils.unset(this.data.locales, this.toKey(locale));
   this.save();
   return this;
 };
@@ -192,7 +192,7 @@ Answer.prototype.defaultKey = function(locale) {
  */
 
 Answer.prototype.toKey = function(locale) {
-  return utils.toKey(locale || this.locale, this.project);
+  return utils.toKey(locale || this.locale, this.name);
 };
 
 /**
@@ -217,7 +217,7 @@ Object.defineProperty(Answer.prototype, 'data', {
   get: function() {
     var data = this.cache.data || (this.cache.data = utils.readJson(this.path));
     data.defaults = data.defaults || {};
-    data.projects = data.projects || {};
+    data.locales = data.locales || {};
     return data;
   }
 });
